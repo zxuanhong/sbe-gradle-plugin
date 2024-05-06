@@ -1,87 +1,79 @@
 plugins {
-  id 'groovy'
-  id 'java-gradle-plugin'
-  id 'eclipse'
-  id 'idea'
-  id 'maven-publish'
-  id 'ivy-publish'
-  id 'com.gradle.plugin-publish' version '1.1.0'
+    id 'groovy'
+    id 'java-gradle-plugin'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'ivy-publish'
+    id 'com.gradle.plugin-publish' version '1.1.0'
 }
 
 repositories {
-  mavenLocal()
-  mavenCentral()
+    mavenLocal()
+    mavenCentral()
 }
 
 group = artifact_group
 version = artifact_version
 
-sourceCompatibility = 1.17
-targetCompatibility = 1.17
+sourceCompatibility = JavaVersion.VERSION_18
+targetCompatibility = JavaVersion.VERSION_18
 
 gradlePlugin {
-  website = 'https://github.com/vontikov/sbe-gradle-plugin/'
-  vcsUrl = 'https://github.com/vontikov/sbe-gradle-plugin/'
-  plugins {
-    gradletestPlugin {
-      id = 'com.github.vontikov.sbe-generator-plugin'
-      displayName = 'Simple Binary Encoding plugin'
-      description = 'Simple Binary Encoding plugin'
-      tags.addAll('SBE', 'Simple Binary Encoding')
-      implementationClass = 'com.github.vontikov.SbeGeneratorPlugin'
+    website = 'https://github.com/vontikov/sbe-gradle-plugin/'
+    vcsUrl = 'https://github.com/vontikov/sbe-gradle-plugin/'
+    plugins {
+        gradletestPlugin {
+            id = 'com.github.vontikov.sbe-generator-plugin'
+            displayName = 'Simple Binary Encoding plugin'
+            description = 'Simple Binary Encoding plugin'
+            tags.addAll('SBE', 'Simple Binary Encoding')
+            implementationClass = 'com.github.vontikov.SbeGeneratorPlugin'
+        }
     }
-  }
 }
 
 publishing {
-  repositories {
-    mavenLocal()
-  }
+    repositories {
+        mavenLocal()
+    }
 }
 
 task createClasspathManifest {
-  def outputDir = file("$buildDir/$name")
+    def outputDir = file("$buildDir/$name")
 
-  inputs.files sourceSets.main.runtimeClasspath
-  outputs.dir outputDir
+    inputs.files sourceSets.main.runtimeClasspath
+    outputs.dir outputDir
 
-  doLast {
-    outputDir.mkdirs()
-    file("$outputDir/plugin-classpath.txt").text =
-        sourceSets.main.runtimeClasspath.join('\n')
-  }
+    doLast {
+        outputDir.mkdirs()
+        file("$outputDir/plugin-classpath.txt").text =
+                sourceSets.main.runtimeClasspath.join('\n')
+    }
 }
 
 configurations {
-  all*.exclude group: 'org.codehaus.groovy', module: 'groovy-all'
+    all*.exclude group: 'org.codehaus.groovy', module: 'groovy-all'
 }
 
 dependencies {
-//  implementation 'org.codehaus.groovy:groovy-all:3.0.8'
-//  implementation gradleApi()
-//  implementation localGroovy()
+    testImplementation(platform('org.junit:junit-bom:5.10.0'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testImplementation 'org.hamcrest:hamcrest-library:2.2'
 
-//  testImplementation 'junit:junit:4.13.2'
-//  testImplementation 'org.hamcrest:hamcrest-all:1.3'
-
-//  testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
-  testImplementation(platform('org.junit:junit-bom:5.10.0'))
-  testImplementation('org.junit.jupiter:junit-jupiter')
-  testImplementation 'org.hamcrest:hamcrest-library:2.2'
-
-  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-  testRuntimeOnly files(createClasspathManifest)
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly files(createClasspathManifest)
 }
 
 test {
-  useJUnitPlatform()
-  testLogging {
-    events "passed", "skipped", "failed"
-  }
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 clean.doFirst {
-  delete "${rootDir}/src/test/resources/projects/generator/build/"
+    delete "${rootDir}/src/test/resources/projects/generator/build/"
 }
 
 defaultTasks 'clean', 'build'
